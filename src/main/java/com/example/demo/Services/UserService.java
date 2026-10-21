@@ -22,29 +22,35 @@ public class UserService {
         return "Harsha";
     }
 
-    public Optional<String> register(Users user) {
+   public Optional<String> register(Users user) {
     user.setPassword(bcrypt.encode(user.getPassword()));
+    
     try {
-        userRepository.save(user);
-        String token=jwtService.generateToken(user.getUsername());
+        Users savedUser = userRepository.save(user);
+        
+        String token = jwtService.generateToken(savedUser.getEmail(), savedUser.getId()); 
         return Optional.of(token);
     } catch (Exception e) {
         return Optional.empty();
     }
 }
 
-
-     public Optional<String> login(Users user) {
-        Optional<Users> dbUser = userRepository.findByUsername(user.getUsername());
-        if (dbUser.isPresent()) {
-            if (bcrypt.matches(user.getPassword(), dbUser.get().getPassword())) {
-                String token = jwtService.generateToken(user.getUsername());
-                return Optional.of(token);
-            }
+public Optional<String> login(Users user) {
+    Optional<Users> foundUser = userRepository.findByEmail(user.getEmail());
+    
+    System.out.println("Input Email: " + user.getEmail());
+    System.out.println("Input Password: " + user.getPassword());
+        
+    if (foundUser.isPresent()) {
+        if (bcrypt.matches(user.getPassword(), foundUser.get().getPassword())) {
+            System.out.println("Match Success!");
+            return Optional.of(jwtService.generateToken(foundUser.get().getEmail(), foundUser.get().getId()));
+        } else {
+            System.out.println("Match Failed: Password mismatch.");
         }
-
-        return Optional.empty(); 
+    } else {
+        System.out.println("Match Failed: User not found.");
     }
-
+    return Optional.empty();
 }
-
+}

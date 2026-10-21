@@ -1,3 +1,5 @@
+import React from 'react';
+
 import './App.css';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HomePage from './Components/Home';
@@ -15,8 +17,8 @@ function App() {
           <Route path="/Home" element={<ProtectedRoute><HomePage/></ProtectedRoute>} />
           <Route path="/" element={<LoginPage/>} />
           <Route path="/Register" element={<RegisterPage/>} />
-          <Route path="/token-handler" element={<TokenHandler />}/>
           <Route path="/Problems" element={<ProtectedRoute><Problems/></ProtectedRoute>} />
+          <Route path="/token-handler" element={<TokenHandler/>} />
          <Route path="/Account" element={<AccountPage />}/>
         </Routes>
       </Router>

@@ -34,12 +34,14 @@ const AccountPage = () => {
           api.get(`/profile/${userId}`),
           api.get(`/profile/${userId}/recent`)
         ]);
+        
         setFormData({
           username: profileRes.data.username || '',
           email: profileRes.data.email || '',
-          github: profileRes.data.git_link || '',
-          linkedin: profileRes.data.Linked_link || ''
+          github: profileRes.data.git_link || profileRes.data.gitLink || '',
+          linkedin: profileRes.data.linked_link || profileRes.data.linkedLink || ''
         });
+        
         setProfile(profileRes.data);
         setRecent(recentRes.data);
       } catch (err) {
@@ -54,7 +56,14 @@ const AccountPage = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await api.put(`/profile/${userId}`, formData);
+      const payload = {
+        username: formData.username,
+        email: formData.email,
+        git_link: formData.github,
+        linked_link: formData.linkedin
+      };
+
+      const res = await api.put(`/profile/${userId}`, payload);
       setProfile(prev => ({ ...prev, ...res.data }));
       setIsEditing(false);
     } catch (err) {
@@ -66,10 +75,10 @@ const AccountPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
-          <p className="text-purple-200 text-lg">Loading profile...</p>
+          <div className="w-14 h-14 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin"></div>
+          <p className="text-slate-400 font-medium tracking-wide text-sm">Syncing secure profile data...</p>
         </div>
       </div>
     );
@@ -77,48 +86,49 @@ const AccountPage = () => {
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <p className="text-white text-xl">Profile not found</p>
+      <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
+        <p className="text-slate-400 text-lg font-medium">Profile architecture not resolved.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+    <div className="min-h-screen bg-[#0B0F19] text-slate-200 font-sans selection:bg-amber-500/30 selection:text-amber-200">
 
       {/* Edit Modal */}
       {isEditing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsEditing(false)} />
-          <div className="relative w-full max-w-lg bg-slate-900/95 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden">
-            <div className="flex items-center justify-between px-8 py-6 border-b border-white/10">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md transition-opacity duration-300" onClick={() => setIsEditing(false)} />
+          <div className="relative w-full max-w-lg bg-[#151924] border border-slate-800 rounded-[28px] shadow-2xl overflow-hidden">
+            
+            <div className="flex items-center justify-between px-8 py-6 border-b border-slate-800">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                  <Edit3 size={18} className="text-white" />
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-900/20">
+                  <Edit3 size={16} className="text-slate-950" />
                 </div>
-                <h2 className="text-xl font-bold text-white">Edit Profile</h2>
+                <h2 className="text-lg font-bold tracking-tight text-slate-100">Modify Profile Parameters</h2>
               </div>
-              <button onClick={() => setIsEditing(false)} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
-                <X size={20} className="text-white/60" />
+              <button onClick={() => setIsEditing(false)} className="p-2 hover:bg-slate-800 rounded-xl transition-colors group">
+                <X size={18} className="text-slate-500 group-hover:text-slate-200 transition-colors" />
               </button>
             </div>
 
             <div className="px-8 py-6 space-y-5">
               {[
-                { label: 'Username', key: 'username', icon: User, placeholder: 'Your username' },
-                { label: 'Email', key: 'email', icon: Mail, placeholder: 'your@email.com' },
-                { label: 'GitHub URL', key: 'github', icon: Github, placeholder: 'https://github.com/username' },
-                { label: 'LinkedIn URL', key: 'linkedin', icon: Linkedin, placeholder: 'https://linkedin.com/in/username' },
+                { label: 'Username', key: 'username', icon: User, placeholder: 'Your unique identifier' },
+                { label: 'Email Address', key: 'email', icon: Mail, placeholder: 'your@email.com' },
+                { label: 'GitHub Profile Link', key: 'github', icon: Github, placeholder: 'https://github.com/username' },
+                { label: 'LinkedIn Directory Link', key: 'linkedin', icon: Linkedin, placeholder: 'https://linkedin.com/in/username' },
               ].map(({ label, key, icon: Icon, placeholder }) => (
-                <div key={key}>
-                  <label className="block text-sm font-semibold text-purple-300/80 mb-2">{label}</label>
-                  <div className="relative">
-                    <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-purple-400/60" />
+                <div key={key} className="space-y-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-amber-500/70">{label}</label>
+                  <div className="relative group">
+                    <Icon size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-amber-500 transition-colors" />
                     <input
                       value={formData[key]}
                       onChange={e => setFormData({ ...formData, [key]: e.target.value })}
                       placeholder={placeholder}
-                      className="w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-500/60 focus:bg-white/10 transition-all"
+                      className="w-full pl-12 pr-4 py-3.5 bg-[#0B0F19] border border-slate-800 rounded-xl text-slate-200 text-sm placeholder:text-slate-700 focus:outline-none focus:border-amber-600 focus:bg-[#151924] transition-all duration-200"
                     />
                   </div>
                 </div>
@@ -126,180 +136,133 @@ const AccountPage = () => {
             </div>
 
             <div className="px-8 pb-8 flex gap-3">
-              <button
-                onClick={() => setIsEditing(false)}
-                className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 hover:bg-white/5 hover:text-white transition-all text-sm font-medium"
-              >
+              <button onClick={() => setIsEditing(false)} className="flex-1 py-3.5 rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white transition-all text-xs font-bold uppercase tracking-wider">
                 Cancel
               </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium text-sm hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {saving
-                  ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  : <Save size={16} />
-                }
-                {saving ? 'Saving...' : 'Save Changes'}
+              <button onClick={handleSave} disabled={saving} className="flex-1 py-3.5 rounded-xl bg-amber-600 text-slate-950 font-bold text-xs uppercase tracking-wider hover:bg-amber-500 active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                {saving ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-slate-950/20 border-t-slate-950 rounded-full animate-spin" />
+                    <span>Committing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save size={14} />
+                    <span>Save Parameters</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Navbar */}
-      <div className="bg-white/5 backdrop-blur-xl border-b border-white/10 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-8 h-18 py-4 flex justify-between items-center">
+      {/* Top Navbar */}
+      <div className="bg-[#0B0F19]/80 backdrop-blur-xl border-b border-slate-800 sticky top-0 z-40">
+        <div className="max-w-5xl mx-auto px-6 h-16 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
-              <Code size={20} className="text-white" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-900/20">
+              <Code size={18} className="text-slate-950" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
-              Coding Master
-            </span>
+            <span className="text-lg font-black tracking-tight text-white">Coding Master</span>
           </div>
-          <button className="p-2.5 hover:bg-white/10 rounded-xl transition-colors">
-            <Settings size={20} className="text-white/60" />
-          </button>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-8 py-10 space-y-8">
+      {/* Main Container */}
+      <div className="max-w-5xl mx-auto px-6 py-10 space-y-8">
 
-        {/* Profile Card */}
-        <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-10 overflow-hidden">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-purple-500/25 to-pink-500/25 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-blue-500/15 to-purple-500/15 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              {/* Avatar */}
-              <div className="relative flex-shrink-0">
-                <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-2xl shadow-purple-500/40">
-                  <span className="text-5xl font-bold text-white">
-                    {profile.username?.[0]?.toUpperCase() || 'U'}
-                  </span>
-                </div>
-                <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 bg-emerald-400 rounded-full border-[3px] border-slate-900 shadow-lg" />
-              </div>
-
-              {/* Info */}
-              <div>
-                <h1 className="text-4xl font-bold text-white mb-2">{profile.username}</h1>
-                <p className="text-purple-200/80 flex items-center gap-2 mb-4 text-base">
-                  <Mail size={16} /> {profile.email}
-                </p>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span className="flex items-center gap-2 text-sm text-purple-300/70 bg-white/5 border border-white/10 px-4 py-2 rounded-xl">
-                    <MapPin size={14} /> India
-                  </span>
-                  {profile.git_link && (
-                    <a href={profile.git_link} target="_blank" rel="noreferrer"
-                      className="flex items-center gap-2 text-sm text-purple-300/70 bg-white/5 border border-white/10 px-4 py-2 rounded-xl hover:border-purple-500/40 hover:text-white transition-all">
-                      <Github size={14} /> GitHub
-                    </a>
-                  )}
-                  {profile.Linked_link && (
-                    <a href={profile.Linked_link} target="_blank" rel="noreferrer"
-                      className="flex items-center gap-2 text-sm text-purple-300/70 bg-white/5 border border-white/10 px-4 py-2 rounded-xl hover:border-purple-500/40 hover:text-white transition-all">
-                      <Linkedin size={14} /> LinkedIn
-                    </a>
-                  )}
-                </div>
+        {/* Profile Card Header */}
+        <div className="relative bg-[#151924] border border-slate-800 rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="relative flex flex-col md:flex-row items-center gap-6">
+            <div className="p-0.5 rounded-[24px] bg-gradient-to-tr from-amber-400 to-amber-600">
+              <div className="w-24 h-24 rounded-[22px] bg-[#0B0F19] flex items-center justify-center font-black text-4xl text-white tracking-tighter">
+                {profile.username?.[0]?.toUpperCase() || 'U'}
               </div>
             </div>
-
-            <button
-              onClick={() => setIsEditing(true)}
-              className="flex items-center gap-2 px-5 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/40 rounded-xl transition-all text-sm text-white/70 hover:text-white flex-shrink-0"
-            >
-              <Edit3 size={16} />
-              Edit Profile
-            </button>
+            <div className="text-center md:text-left space-y-2">
+              <h1 className="text-3xl font-extrabold tracking-tight text-white">{profile.username}</h1>
+              <p className="text-sm text-slate-400 flex items-center justify-center md:justify-start gap-2">
+                <Mail size={14} className="text-amber-500" /> {profile.email}
+              </p>
+              <div className="flex flex-wrap justify-center md:justify-start gap-2 pt-1">
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 bg-[#0B0F19] border border-slate-800 px-3 py-1.5 rounded-lg">
+                  <MapPin size={12} /> India
+                </span>
+                {profile.git_link && (
+                  <a href={profile.git_link} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-[#0B0F19] border border-slate-800 px-3 py-1.5 rounded-lg hover:border-amber-600 hover:text-white transition-all">
+                    <Github size={12} /> GitHub
+                  </a>
+                )}
+                {profile.linked_link && (
+                  <a href={profile.linked_link} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 bg-[#0B0F19] border border-slate-800 px-3 py-1.5 rounded-lg hover:border-amber-600 hover:text-white transition-all">
+                    <Linkedin size={12} /> LinkedIn
+                  </a>
+                )}
+              </div>
+            </div>
           </div>
+          <button onClick={() => setIsEditing(true)} className="px-5 py-2.5 bg-[#0B0F19] hover:bg-amber-600 border border-slate-800 hover:border-amber-500 rounded-xl transition-all text-xs font-bold uppercase tracking-wider text-slate-200 hover:text-slate-950 shadow-lg active:scale-95">
+            Edit Profile
+          </button>
         </div>
 
-        {/* Stats */}
+        {/* Stats Layout */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-          <StatCard label="Problems Solved" value={profile.solved} icon={BookOpen} color="from-emerald-500 to-teal-500" />
-          <StatCard label="Global Rank" value={`#${profile.rank}`} icon={Trophy} color="from-amber-500 to-orange-500" />
-          <StatCard label="Day Streak" value={`${profile.streak} 🔥`} icon={Zap} color="from-purple-500 to-pink-500" />
-          <StatCard label="Acceptance Rate" value={`${profile.acceptanceRate}%`} icon={Target} color="from-blue-500 to-cyan-500" />
+          <StatCard label="Total Solved" value={profile.totalSolved ?? 0} icon={BookOpen} color="from-amber-400 to-amber-600" />
+          <StatCard label="Easy Target" value={profile.easySolved ?? 0} icon={Trophy} color="from-amber-400 to-amber-600" />
+          <StatCard label="Medium Tier" value={profile.mediumSolved ?? 0} icon={Zap} color="from-amber-400 to-amber-600" />
+          <StatCard label="Hard Mode" value={profile.hardSolved ?? 0} icon={Target} color="from-amber-400 to-amber-600" />
         </div>
 
         {/* Recent Submissions */}
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden">
-          <div className="flex items-center gap-4 px-8 py-6 border-b border-white/10">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
-              <TrendingUp size={18} className="text-white" />
+        <div className="bg-[#151924] border border-slate-800 rounded-3xl overflow-hidden">
+          <div className="flex items-center justify-between px-8 py-5 border-b border-slate-800">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-600 flex items-center justify-center">
+                <TrendingUp size={16} className="text-slate-950" />
+              </div>
+              <h2 className="font-bold text-white text-lg">System Logs Matrix</h2>
             </div>
-            <h2 className="font-bold text-white text-xl">Recent Submissions</h2>
-            <span className="ml-auto text-sm text-white/40 bg-white/5 px-3 py-1 rounded-lg border border-white/10">
-              {recent.length} submissions
+            <span className="text-xs font-bold uppercase text-amber-500 bg-amber-950/30 border border-amber-900/50 px-3 py-1.5 rounded-lg">
+              {recent.length} Submissions Processed
             </span>
           </div>
 
           {recent.length === 0 ? (
-            <div className="p-16 text-center">
-              <div className="w-20 h-20 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-5">
-                <Code size={32} className="text-purple-400/50" />
-              </div>
-              <p className="text-white/60 font-semibold text-lg">No submissions yet</p>
-              <p className="text-white/30 text-sm mt-2">Start solving problems to track your progress!</p>
-            </div>
+            <div className="p-16 text-center text-slate-600">Execution Buffer Empty</div>
           ) : (
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-slate-800">
               {recent.map((r, i) => (
-                <div key={i} className="flex justify-between items-center px-8 py-5 hover:bg-white/5 transition-all cursor-pointer group">
-                  <div className="flex items-center gap-5">
-                    <div className={`w-3 h-3 rounded-full flex-shrink-0 ${
-                      r.status === 'ACCEPTED' ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50' :
-                      r.status === 'ATTEMPTED' ? 'bg-rose-400 shadow-lg shadow-rose-400/50' :
-                      'bg-amber-400 shadow-lg shadow-amber-400/50'
-                    }`} />
-                    <span className="font-semibold text-white/90 group-hover:text-white transition-colors text-base">
-                      {r.problemTitle || r.title || `Problem #${r.problemId}`}
-                    </span>
-                  </div>
+                <div key={i} className="flex justify-between items-center px-8 py-4.5 hover:bg-slate-800/20 transition-all cursor-pointer group">
                   <div className="flex items-center gap-4">
-                    <span className={`text-sm px-4 py-1.5 rounded-full font-semibold ${
-                      r.status === 'ACCEPTED'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : r.status === 'ATTEMPTED'
-                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                    }`}>
-                      {r.status}
-                    </span>
-                    <ChevronRight size={18} className="text-white/30 group-hover:text-white/60 group-hover:translate-x-1 transition-all" />
+                    <div className={`w-2 h-2 rounded-full ${r.status === 'ACCEPTED' ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                    <span className="font-semibold text-slate-300 text-sm">{r.problemTitle || r.title}</span>
                   </div>
+                  <span className={`text-[11px] font-bold uppercase px-3 py-1 rounded-md border ${r.status === 'ACCEPTED' ? 'bg-emerald-950/30 text-emerald-400 border-emerald-900' : 'bg-rose-950/30 text-rose-400 border-rose-900'}`}>
+                    {r.status}
+                  </span>
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
-
-      <style>{`
-        * { scrollbar-width: none; -ms-overflow-style: none; }
-        *::-webkit-scrollbar { display: none; }
-      `}</style>
+      <style>{`* { scrollbar-width: none; }`}</style>
     </div>
   );
 };
 
 const StatCard = ({ label, value, icon: Icon, color }) => (
-  <div className="group relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-7 overflow-hidden hover:border-white/20 transition-all hover:scale-[1.02] cursor-default">
-    <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 group-hover:opacity-10 transition-opacity`} />
-    <div className="relative flex justify-between items-start">
-      <div>
-        <p className="text-4xl font-bold text-white mb-2">{value}</p>
-        <p className="text-sm text-white/50 font-medium">{label}</p>
+  <div className="bg-[#151924] border border-slate-800 rounded-2xl p-5 hover:border-amber-700 transition-all">
+    <div className="flex flex-col justify-between h-24">
+      <div className="flex justify-between items-start w-full">
+        <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase">{label}</span>
+        <div className={`p-2 bg-gradient-to-br ${color} rounded-xl`}>
+          <Icon size={16} className="text-slate-950" />
+        </div>
       </div>
-      <div className={`p-3.5 bg-gradient-to-br ${color} rounded-2xl shadow-lg`}>
-        <Icon size={22} className="text-white" />
-      </div>
+      <h3 className="text-3xl font-black text-white">{value}</h3>
     </div>
   </div>
 );
